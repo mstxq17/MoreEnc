@@ -5,17 +5,59 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 )
+
+var (
+	encode = flag.Bool("e", false, "Encode input")
+	decode = flag.Bool("d", false, "Decode input")
+	help   = flag.Bool("help", false, "Show usage")
+)
+
+func main() {
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		return
+	}
+
+	input := readInput()
+
+	var output string
+	if *encode {
+		output = input
+	} else if *decode {
+		output = input
+	} else {
+		_, _ = fmt.Fprintln(os.Stderr, "Error: encode or decode flag must be set")
+		os.Exit(1)
+	}
+	fmt.Println(output)
+}
 
 // Read input from stdin or specified string
 func readInput() string {
 	var input string
 	if stat, _ := os.Stdin.Stat(); (stat.Mode() & os.ModeCharDevice) == 0 {
 		// Input is piped in
-		bytes, _ := io.ReadAll(os.Stdin)
-		input = string(bytes)
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if input != "" {
+				input += "\n"
+			}
+			if *encode {
+				line = core.UrlEncode(line)
+			} else if *decode {
+				line = core.UrlDecode(line)
+			}
+			input += line
+		}
+		if err := scanner.Err(); err != nil {
+			_, _ = fmt.Fprintln(os.Stderr, "Error reading input:", err)
+			os.Exit(1)
+		}
 	} else if flag.NArg() > 0 {
 		// Input is specified as a command line argument
 		input = flag.Arg(0)
@@ -26,33 +68,4 @@ func readInput() string {
 		input, _ = reader.ReadString('\n')
 	}
 	return input
-}
-
-func main() {
-	encode := flag.Bool("e", false, "URL encode input")
-	decode := flag.Bool("d", false, "URL encode input")
-	flag.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS] [INPUT]\n\n", os.Args[0])
-		_, _ = fmt.Fprintln(os.Stderr, "OPTIONS:")
-		flag.PrintDefaults()
-		_, _ = fmt.Fprintln(os.Stderr, "\nINPUT:")
-		_, _ = fmt.Fprintln(os.Stderr, "  The string to encode or decode. If not specified, the program will prompt for input.")
-	}
-	// parse the setting
-	// 初始化设置
-	flag.Parse()
-	var output string
-	var input string = readInput()
-	if *encode {
-		output = core.UrlEncode(input)
-		fmt.Println(output)
-	}
-	if *decode {
-		output = core.UrlDecode(input)
-		fmt.Println(output)
-	}
-	if !*encode && !*decode {
-		_, _ = fmt.Fprintln(os.Stderr, "Must specify either -encode or -decode flag")
-		os.Exit(1)
-	}
 }
