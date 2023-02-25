@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	encode = flag.Bool("e", false, "Encode input")
-	decode = flag.Bool("d", false, "Decode input")
-	help   = flag.Bool("help", false, "Show usage")
+	encode    = flag.Bool("e", false, "Encode input")
+	decode    = flag.Bool("d", false, "Decode input")
+	b64encode = flag.Bool("b64e", false, "Base64 Encode input")
+	b64decode = flag.Bool("b64d", false, "Base64 Decode input")
+	help      = flag.Bool("help", false, "Show usage")
 )
 
 func main() {
@@ -29,7 +31,9 @@ func main() {
 		output = input
 	} else if *decode {
 		output = input
-	} else {
+	}
+	output = input
+	if !*encode && !*decode && !*b64decode && !*b64encode {
 		_, _ = fmt.Fprintln(os.Stderr, "Error: encode or decode flag must be set")
 		os.Exit(1)
 	}
@@ -47,10 +51,20 @@ func readInput() string {
 			if input != "" {
 				input += "\n"
 			}
+			if *b64encode {
+				line = core.B64Encode(line)
+				input += "\n"
+			}
+			if *b64decode {
+				line = core.B64Decode(line)
+				input += "\n"
+			}
 			if *encode {
 				line = core.UrlEncode(line)
+				input += "\n"
 			} else if *decode {
 				line = core.UrlDecode(line)
+				input += "\n"
 			}
 			input += line
 		}

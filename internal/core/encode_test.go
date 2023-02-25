@@ -43,7 +43,7 @@ func TestBase64Encode(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			if ans := Base64Encode(c.Input); ans != c.Expected {
+			if ans := B64Encode(c.Input); ans != c.Expected {
 				t.Fatalf("%s expected %s, but %s got", c.Input, c.Expected, ans)
 			}
 		})

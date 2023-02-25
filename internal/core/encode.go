@@ -10,7 +10,7 @@ func UrlEncode(value string) string {
 	return encodeOutput
 }
 
-func Base64Encode(value string) string {
+func B64Encode(value string) string {
 	encodeOutput := base64.StdEncoding.EncodeToString([]byte(value))
 	return encodeOutput
 }
